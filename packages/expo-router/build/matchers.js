@@ -10,7 +10,7 @@ export function matchDeepDynamicRouteName(name) {
 }
 /** Match `(page)` -> `page` */
 export function matchGroupName(name) {
-    return name.match(/^\(([^/]+?)\)$/)?.[1];
+    return name.match(/^(?:[^\\(\\)])*?\(([^\\/]+)\).*?$/)?.[1];
 }
 export function getNameFromFilePath(name) {
     return removeSupportedExtensions(removeFileSystemDots(name));
