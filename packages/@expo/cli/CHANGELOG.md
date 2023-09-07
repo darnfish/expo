@@ -10,6 +10,8 @@
 
 ### 🐛 Bug fixes
 
+- Ensure a unique static path is generated for each group during static extraction
+
 ### 💡 Others
 
 ## 0.12.0 — 2023-09-04
