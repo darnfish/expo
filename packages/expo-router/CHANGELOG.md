@@ -8,7 +8,7 @@
 
 ### 🐛 Bug fixes
 
-- Fix navigating to shared routes.
+- Fix navigating to shared routes. ([#24218](https://github.com/expo/expo/pull/24218) by [@marklawlor](https://github.com/marklawlor))
 
 ### 💡 Others
 
