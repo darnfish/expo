@@ -2350,6 +2350,7 @@ PODS:
     - ExpoModulesCore
     - UMAppLoader
   - EXUpdates (0.20.0):
+    - ASN1Decoder (~> 1.8)
     - EASClient
     - EXManifests
     - ExpoModulesCore
@@ -2360,6 +2361,7 @@ PODS:
     - React-Core
     - sqlite3 (= 3.42.0)
   - EXUpdates/Tests (0.20.0):
+    - ASN1Decoder (~> 1.8)
     - EASClient
     - EXManifests
     - ExpoModulesCore
@@ -4966,16 +4968,8 @@ SPEC CHECKSUMS:
   EXSplashScreen: a906ff3babc76cad7ad7482255f043e9e5b9b5d4
   EXStructuredHeaders: 8dd6bab97912194ee7641c329feca89321140318
   EXTaskManager: aae3b3c8144af1e0bfdbe8a3cc19fb116a01368d
-<<<<<<< HEAD
-  EXUpdates: 2a2b560639dbc2424bc13f4010b7212c82a2b63f
+  EXUpdates: 79bd417be2d521e99771df018258f9e76e030fd9
   EXUpdatesInterface: 376edcf7e762dcf8f55552804944dac004fa3349
-||||||| parent of b3a73bc072 ([ios][updates] bump sqlite version)
-  EXUpdates: 30c6c1eb2bb6fca39450260c4aeae9024c080c08
-  EXUpdatesInterface: 1f9cdd9e1e1026de7488ac537e9c40bc6b6fb872
-=======
-  EXUpdates: 1d195e9306940cca4d95faa2bf205f9a94a80052
-  EXUpdatesInterface: 1f9cdd9e1e1026de7488ac537e9c40bc6b6fb872
->>>>>>> b3a73bc072 ([ios][updates] bump sqlite version)
   FBAEMKit: af2972f39bb0f3f7c45998f435b007833c32ffb2
   FBAudienceNetwork: 03e273f66b70756be7d060927111af97b7641b06
   FBLazyVector: 5d4a3b7f411219a45a6d952f77d2c0a6c9989da5
