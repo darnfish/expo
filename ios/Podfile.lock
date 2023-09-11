@@ -2350,7 +2350,6 @@ PODS:
     - ExpoModulesCore
     - UMAppLoader
   - EXUpdates (0.20.0):
-    - ASN1Decoder (~> 1.8)
     - EASClient
     - EXManifests
     - ExpoModulesCore
@@ -2361,7 +2360,6 @@ PODS:
     - React-Core
     - sqlite3 (= 3.42.0)
   - EXUpdates/Tests (0.20.0):
-    - ASN1Decoder (~> 1.8)
     - EASClient
     - EXManifests
     - ExpoModulesCore
@@ -4968,7 +4966,7 @@ SPEC CHECKSUMS:
   EXSplashScreen: a906ff3babc76cad7ad7482255f043e9e5b9b5d4
   EXStructuredHeaders: 8dd6bab97912194ee7641c329feca89321140318
   EXTaskManager: aae3b3c8144af1e0bfdbe8a3cc19fb116a01368d
-  EXUpdates: 79bd417be2d521e99771df018258f9e76e030fd9
+  EXUpdates: e00261ce6e9f030735a23712591dba9d94b77f0d
   EXUpdatesInterface: 376edcf7e762dcf8f55552804944dac004fa3349
   FBAEMKit: af2972f39bb0f3f7c45998f435b007833c32ffb2
   FBAudienceNetwork: 03e273f66b70756be7d060927111af97b7641b06
