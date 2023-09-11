@@ -12,6 +12,8 @@ import { Stack } from '../layouts/Stack';
 import { Tabs } from '../layouts/Tabs';
 import { act, fireEvent, renderRouter, screen } from '../testing-library';
 
+afterEach(() => jest.clearAllMocks());
+
 describe('hooks only', () => {
   it('can handle navigation between routes', async () => {
     renderRouter({
@@ -376,4 +378,21 @@ it('can pop back from a nested modal to a nested sibling', async () => {
 
   act(() => router.back());
   expect(screen).toHavePathname('/slot');
+});
+
+it('will warn if a href provides duplicate parameters', async () => {
+  const spy = jest.spyOn(global.console, 'warn').mockImplementation(() => {});
+
+  renderRouter({
+    index: () => <Redirect href="/test?id=test23" />,
+    ':id': () => <Text />,
+  });
+
+  // If there is both a param and a path, use the param
+  expect(screen).toHavePathname('/test');
+
+  expect(spy).toHaveBeenNthCalledWith(
+    1,
+    "Route '/:id' with param 'id' was specified both in the path and as a param, removing from path"
+  );
 });
