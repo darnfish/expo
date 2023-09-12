@@ -3,127 +3,98 @@
  */
 import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
-import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Image, Text, View } from 'react-native';
 
 export default function App() {
-  const [showingView1, setShowingView1] = useState(true);
-  const [showingView2, setShowingView2] = useState(false);
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Updates JS API test</Text>
-      <Pressable
-        style={styles.button}
-        onPress={() => setShowingView1((showingView1) => !showingView1)}>
-        <Text style={styles.buttonText}>Toggle view 1</Text>
-      </Pressable>
-      <Pressable
-        style={styles.button}
-        onPress={() => setShowingView2((showingView2) => !showingView2)}>
-        <Text style={styles.buttonText}>Toggle view 2</Text>
-      </Pressable>
-      {showingView1 ? <UpdatesStatusView index={1} /> : null}
-      {showingView2 ? <UpdatesStatusView index={2} /> : null}
-    </View>
-  );
-}
-
-function UpdatesStatusView(props: { index: number }) {
   const [updateMessage, setUpdateMessage] = React.useState('');
-  const [isRollback, setIsRollback] = React.useState(false);
-  const [noUpdateReason, setNoUpdateReason] = React.useState('');
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
 
   // Displays a message showing whether or not the app is running
   // a downloaded update
-  const runTypeMessage =
-    `isEmbeddedLaunch = ${Updates.isEmbeddedLaunch}\n` + `noUpdateReason = ${noUpdateReason}`;
+  const runTypeMessage = Updates.isEmbeddedLaunch
+    ? 'This app is running from built-in code really'
+    : 'This app is running an update really';
 
   const checkAutomaticallyMessage = `Automatic check setting = ${Updates.checkAutomatically}`;
 
-  const {
-    isUpdateAvailable,
-    isUpdatePending,
-    isChecking,
-    isDownloading,
-    availableUpdate,
-    checkError,
-    downloadError,
-    lastCheckForUpdateTimeSinceRestart,
-  } = Updates.useUpdates();
+  /**
+   * Async function to manually check for an available update from EAS.
+   */
+  const checkManuallyForUpdate = async () => {
+    // set a few extra params to test extra params
+    setUpdateMessage('Calling setExtraParamAsync...');
+    await Updates.setExtraParamAsync('testsetnull', 'testvalue');
+    await Updates.setExtraParamAsync('testsetnull', null);
+    await Updates.setExtraParamAsync('testparam', 'testvalue');
 
-  useEffect(() => {
-    const handleAsync = async () => {
-      setIsRollback(availableUpdate?.type === Updates.UpdateInfoType.ROLLBACK);
-    };
-    if (isUpdateAvailable) {
-      handleAsync();
+    setUpdateMessage('Calling checkForUpdateAsync...');
+    const checkResult = await Updates.checkForUpdateAsync();
+    if (checkResult.isAvailable) {
+      setUpdateMessage(
+        `checkForUpdateAsync found a new update: manifest = \n${manifestToString(
+          checkResult.manifest
+        )}...`
+      );
+    } else {
+      setUpdateMessage('No new update available');
     }
-  }, [isUpdateAvailable]);
+    setUpdateAvailable(checkResult.isAvailable);
+  };
 
-  useEffect(() => {
-    const checkingMessage = isChecking ? 'Checking for an update...\n' : '';
-    const downloadingMessage = isDownloading ? 'Downloading...\n' : '';
-    const availableMessage = isUpdateAvailable
-      ? isRollback
-        ? `Rollback directive found, created at ${
-            availableUpdate?.createdAt.toLocaleString() ?? ''
-          }\n`
-        : `Found a new update: manifest = \n${manifestToString(availableUpdate?.manifest)}...` +
-          '\n'
-      : 'No new update available\n';
-    const checkErrorMessage = checkError ? `Error in check: ${checkError.message}\n` : '';
-    const downloadErrorMessage = downloadError ? `Error in check: ${downloadError.message}\n` : '';
-    const lastCheckTimeMessage = lastCheckForUpdateTimeSinceRestart
-      ? `Last check: ${lastCheckForUpdateTimeSinceRestart.toLocaleString() ?? ''}\n`
-      : '';
-    setUpdateMessage(
-      checkingMessage +
-        downloadingMessage +
-        availableMessage +
-        checkErrorMessage +
-        downloadErrorMessage +
-        lastCheckTimeMessage
-    );
-  }, [
-    isUpdateAvailable,
-    isUpdatePending,
-    isChecking,
-    isDownloading,
-    checkError,
-    downloadError,
-    isRollback,
-  ]);
-
-  useEffect(() => {
-    const handleReloadAsync = async () => {
-      let countdown = 5;
-      while (countdown > 0) {
-        setUpdateMessage(`Downloaded update... launching it in ${countdown} seconds.`);
-        countdown = countdown - 1;
-        await delay(1000);
-      }
-      await Updates.reloadAsync();
-    };
-    if (isUpdatePending) {
-      handleReloadAsync();
+  /**
+   * Async function to fetch and load the most recent update from EAS.
+   */
+  const downloadAndRunUpdate = async () => {
+    setUpdateMessage('Downloading the new update...');
+    await Updates.fetchUpdateAsync();
+    let countdown = 5;
+    while (countdown > 0) {
+      setUpdateMessage(
+        `Downloaded update... launching it in ${countdown} seconds.`,
+      );
+      countdown = countdown - 1;
+      await delay(1000);
     }
-  }, [isUpdatePending]);
+    await Updates.reloadAsync();
+  };
+
+  /**
+   * Sample UpdateEvent listener that handles all three event types.
+   * These events occur during app startup, when expo-updates native code
+   * automatically checks for available updates from EAS.
+   * @param {} event The event to handle
+   */
+  const eventListener = (event: Updates.UpdateEvent) => {
+    if (event.type === Updates.UpdateEventType.ERROR) {
+      setUpdateMessage(`Error: ${event.message}`);
+    } else if (event.type === Updates.UpdateEventType.NO_UPDATE_AVAILABLE) {
+      setUpdateMessage('No new update available');
+    } else if (event.type === Updates.UpdateEventType.UPDATE_AVAILABLE) {
+      setUpdateMessage(`New update available\n${manifestToString(event.manifest)}`);
+      setUpdateAvailable(true);
+    }
+  };
+  Updates.useUpdateEvents(eventListener);
 
   const handleCheckButtonPress = () => {
-    Updates.checkForUpdateAsync().then((result) => {
-      if (result.isAvailable === false) {
-        setNoUpdateReason(result.reason ?? '');
-      }
+    checkManuallyForUpdate().catch((error) => {
+      setUpdateMessage(`Error checking for updates: ${error.message}`);
     });
   };
 
   const handleDownloadButtonPress = () => {
-    Updates.fetchUpdateAsync();
+    downloadAndRunUpdate().catch((error) => {
+      setUpdateMessage(`Error downloading and running update: ${error.message}`);
+    });
   };
 
   return (
     <View style={styles.container}>
-      <Text>View {props.index}</Text>
+      <Image source={require('./assets/dougheadshot.jpg')} height={100} width={100} style={{height: 100, width: 100}}  />
+      <Image source={require('./assets/coffee-prep.jpg')} height={100} width={100} style={{height: 100, width: 100}}  />
+      <Text style={styles.titleText}>Updates JS API test</Text>
+      <Text> </Text>
       <Text>{runTypeMessage}</Text>
       <Text>{checkAutomaticallyMessage}</Text>
       <Text> </Text>
@@ -132,7 +103,7 @@ function UpdatesStatusView(props: { index: number }) {
       <Pressable style={styles.button} onPress={handleCheckButtonPress}>
         <Text style={styles.buttonText}>Check manually for updates</Text>
       </Pressable>
-      {isUpdateAvailable ? (
+      {updateAvailable ? (
         <Pressable style={styles.button} onPress={handleDownloadButtonPress}>
           <Text style={styles.buttonText}>Download update</Text>
         </Pressable>
@@ -147,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
   },
   button: {
     alignItems: 'center',
@@ -164,10 +135,10 @@ const styles = StyleSheet.create({
   },
   updateMessageText: {
     margin: 10,
-    height: 100,
+    height: 200,
     paddingVertical: 12,
     paddingHorizontal: 32,
-    width: 250,
+    width: '90%',
     borderColor: '#4630EB',
     borderWidth: 1,
     borderRadius: 4,
@@ -196,7 +167,7 @@ const manifestToString = (manifest?: Updates.Manifest) => {
         {
           id: manifest.id,
           createdAt: manifest.createdAt,
-          // metadata: manifest.metadata,
+          metadata: manifest.metadata,
         },
         null,
         2

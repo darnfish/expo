@@ -10,6 +10,7 @@ import expo.modules.updates.db.entity.UpdateEntity
 import expo.modules.updates.db.enums.UpdateStatus
 import expo.modules.updates.loader.FileDownloader.AssetDownloadCallback
 import expo.modules.updates.loader.FileDownloader.RemoteUpdateDownloadCallback
+import expo.modules.updates.logging.UpdatesLogger
 import expo.modules.updates.manifest.ManifestMetadata
 import expo.modules.updates.manifest.UpdateManifest
 import java.io.File
@@ -37,6 +38,8 @@ abstract class Loader protected constructor(
   private var skippedAssetList = mutableListOf<AssetEntity>()
   private var existingAssetList = mutableListOf<AssetEntity>()
   private var finishedAssetList = mutableListOf<AssetEntity>()
+
+  private val logger = UpdatesLogger(context)
 
   data class LoaderResult(val updateEntity: UpdateEntity?, val updateDirective: UpdateDirective?)
 
@@ -247,8 +250,11 @@ abstract class Loader protected constructor(
             )
         )
       ) {
+        logger.info("AssetDownload: File ${assetEntity.key}.${assetEntity.type} already exists")
         handleAssetDownloadCompleted(assetEntity, AssetLoadResult.ALREADY_EXISTS)
         continue
+      } else {
+        logger.info("AssetDownload: File ${assetEntity.key}.${assetEntity.type} needs downloading")
       }
 
       loadAsset(

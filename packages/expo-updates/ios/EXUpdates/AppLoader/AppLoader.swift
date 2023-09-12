@@ -49,6 +49,8 @@ open class AppLoader: NSObject {
   private let arrayLock: NSLock = NSLock()
   private let completionQueue: DispatchQueue
 
+  private let logger = UpdatesLogger()
+
   public init(config: UpdatesConfig, database: UpdatesDatabase, directory: URL, launchedUpdate: Update?, completionQueue: DispatchQueue) {
     self.config = config
     self.database = database
@@ -217,10 +219,12 @@ open class AppLoader: NSObject {
               let urlOnDisk = self.directory.appendingPathComponent(asset.filename)
               if FileManager.default.fileExists(atPath: urlOnDisk.path) {
                 // file already exists, we don't need to download it again
+                self.logger.info(message: "AssetDownload: File \(asset.filename) already exists")
                 DispatchQueue.global().async {
                   self.handleAssetDownloadAlreadyExists(asset)
                 }
               } else {
+                self.logger.info(message: "AssetDownload: File \(asset.filename) needs downloading")
                 self.downloadAsset(asset)
               }
             }
